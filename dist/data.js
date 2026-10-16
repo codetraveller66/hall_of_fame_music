@@ -1,35 +1,66 @@
 const UI = {
   de: {
-    language: 'Sprache', soundOff: 'Sound aus', soundOn: 'Sound an', share: 'Teilen', shared: 'Link kopiert!',
+    language: 'Sprache', soundOff: 'Ambiente aus', soundOn: 'Ambiente an',
     eyebrow: 'INTERAKTIVES MUSIKARCHIV · AUSGABE 01', titleA: 'IKONEN.', titleB: 'HYM­NEN.', titleC: 'GESCHICHTEN.',
     intro: 'Zehn Stimmen. Fünfzig Songs. Öffne jede Akte und entdecke, was hinter den Hits steckt.',
     enter: 'Akte öffnen', artists: 'Künstler', songs: 'Songs', languages: 'Sprachen', scroll: 'ENTDECKEN',
     dossier: 'KÜNSTLERAKTE', essential: '5 ESSENTIAL TRACKS', choose: 'Wähle einen Track', back: 'Zurück',
-    story: 'DIE STORY', released: 'Erschienen', preview: 'Snippet abspielen', pause: 'Pause', unavailable: 'Keine Vorschau verfügbar',
+    story: 'HÖRNOTIZEN', released: 'Erschienen', preview: 'Auf Apple Music suchen ↗', pause: 'Pause', unavailable: 'Keine Vorschau verfügbar',
     searching: 'Suche Vorschau …', members: 'Mitglieder', nowPlaying: 'JETZT', next: 'Nächster Künstler', source: 'Cover & Hörprobe via Apple Music',
     loadError: 'Bild konnte nicht geladen werden', audioError: 'Dieser Titel ist in deiner Region nicht als Vorschau verfügbar.'
   },
   en: {
-    language: 'Language', soundOff: 'Sound off', soundOn: 'Sound on', share: 'Share', shared: 'Link copied!',
+    language: 'Language', soundOff: 'Ambience off', soundOn: 'Ambience on',
     eyebrow: 'INTERACTIVE MUSIC ARCHIVE · ISSUE 01', titleA: 'ICONS.', titleB: 'ANTHEMS.', titleC: 'STORIES.',
     intro: 'Ten voices. Fifty songs. Open every dossier and discover what lives behind the hits.',
     enter: 'Open dossier', artists: 'Artists', songs: 'Songs', languages: 'Languages', scroll: 'DISCOVER',
     dossier: 'ARTIST DOSSIER', essential: '5 ESSENTIAL TRACKS', choose: 'Choose a track', back: 'Back',
-    story: 'THE STORY', released: 'Released', preview: 'Play snippet', pause: 'Pause', unavailable: 'Preview unavailable',
+    story: 'LISTENING NOTES', released: 'Released', preview: 'Find on Apple Music ↗', pause: 'Pause', unavailable: 'Preview unavailable',
     searching: 'Finding preview …', members: 'Members', nowPlaying: 'NOW', next: 'Next artist', source: 'Artwork & preview via Apple Music',
     loadError: 'Image unavailable', audioError: 'This track has no preview in your region.'
   },
   zh: {
-    language: '语言', soundOff: '声音关闭', soundOn: '声音开启', share: '分享', shared: '链接已复制！',
+    language: '语言', soundOff: '氛围音关闭', soundOn: '氛围音开启',
     eyebrow: '互动音乐档案 · 第 01 期', titleA: '偶像。', titleB: '金曲。', titleC: '故事。',
     intro: '十组音乐人，五十首代表作。打开每份档案，发现热门歌曲背后的故事。',
     enter: '打开档案', artists: '音乐人', songs: '歌曲', languages: '语言', scroll: '开始探索',
     dossier: '音乐人档案', essential: '5 首代表作', choose: '选择一首歌曲', back: '返回',
-    story: '创作故事', released: '发行年份', preview: '播放片段', pause: '暂停', unavailable: '暂无试听',
+    story: '歌曲解读', released: '发行年份', preview: '前往 Apple Music 搜索 ↗', pause: '暂停', unavailable: '暂无试听',
     searching: '正在查找试听…', members: '成员', nowPlaying: '正在播放', next: '下一位音乐人', source: '封面与试听来自 Apple Music',
     loadError: '图片暂不可用', audioError: '你所在地区暂不提供这首歌的试听。'
   }
 };
+
+Object.assign(UI.de, {
+  intro: 'Zehn Künstler. Fünfzig ausgewählte Songs. Entdecke Klang, Stimmung und Motive hinter den Tracks.',
+  essential: '5 AUSGEWÄHLTE TRACKS', source: 'Eigenes Poster · kein offizielles Cover',
+  independent: 'Unabhängiges Portfolio-Projekt. Keine Verbindung zu Künstlern oder Labels.',
+  rights: 'Quellen & Rechte', photoCredits: 'Fotografien & Lizenzen',
+  photoChanges: 'Bildanpassungen: Zuschnitt, Graustufen und Kontrast. CC-BY-SA-Anpassungen behalten die angegebene Lizenz.',
+  editorial: 'Redaktionelle Interpretation; kein Künstlerzitat.',
+  ambienceHint: 'Originaler synthetischer Ambient-Loop; keine Aufnahme der ausgewählten Songs.',
+  audioError: 'Ambient-Audio ist in diesem Browser nicht verfügbar.'
+});
+Object.assign(UI.en, {
+  intro: 'Ten artists. Fifty selected songs. Explore the sound, mood and themes behind each track.',
+  essential: '5 SELECTED TRACKS', source: 'Original poster · not official album artwork',
+  independent: 'Independent portfolio project. Not affiliated with artists or labels.',
+  rights: 'Sources & rights', photoCredits: 'Photo credits & licenses',
+  photoChanges: 'Photo treatments: cropping, grayscale and contrast. CC BY-SA adaptations retain the indicated license.',
+  editorial: 'Editorial interpretation, not an artist quotation.',
+  ambienceHint: 'Original synthesized ambient loop; not a recording of the featured songs.',
+  audioError: 'Ambient audio is unavailable in this browser.'
+});
+Object.assign(UI.zh, {
+  intro: '十组音乐人，五十首精选曲目。打开档案，探索每首歌的声音、情绪与主题。',
+  essential: '5 首精选曲目', source: '原创排版海报 · 非官方唱片封面',
+  independent: '独立求职展示项目，与歌手及唱片公司无关联。',
+  rights: '来源与权利说明', photoCredits: '照片署名与许可证',
+  photoChanges: '照片处理：裁切、灰度和对比度调整。CC BY-SA 图片改编沿用所列许可证。',
+  editorial: '编辑性解读，不是歌手本人引述。',
+  ambienceHint: '原创合成氛围音，不是所展示歌曲的录音。',
+  audioError: '当前浏览器暂不支持播放氛围音。'
+});
 
 const ARTISTS = [
   {
@@ -74,7 +105,7 @@ const ARTISTS = [
       song('Miss Independent', 2008, 'R&B / Pop', 'Ne-Yo feiert eine Partnerin, deren Ehrgeiz und Eigenständigkeit selbst zum stärksten Reiz werden.', 'Ne-Yo celebrates a partner whose ambition and independence become her most magnetic qualities.', 'Ne-Yo 赞美一位有野心且独立的女性，而这些特质正是她最迷人的地方。'),
       song('Closer', 2008, 'Dance-Pop', 'Vom House-Puls getragen, beschreibt der Track Anziehung als hypnotischen Sog, dem Vernunft kaum standhält.', 'Driven by a house pulse, the track describes attraction as a hypnotic pull that reason cannot resist.', '在 House 节拍推动下，歌曲把吸引力写成理智无法抗拒的催眠漩涡。'),
       song('Because of You', 2007, 'R&B', 'Liebe erscheint hier wie eine Abhängigkeit: berauschend, widersprüchlich und trotz aller Warnzeichen unwiderstehlich.', 'Love appears as an addiction: intoxicating, contradictory, and irresistible despite every warning sign.', '爱情在这里像一种成瘾：令人沉醉、充满矛盾，即使警报不断仍无法抗拒。'),
-      song('Let Me Love You', 2012, 'EDM / Pop', 'Über Calvin Harris’ Produktion wird Zuneigung zur Einladung, den eigenen Wert endlich anzunehmen.', 'Over Calvin Harris production, affection becomes an invitation to finally recognize your own worth.', '在 Calvin Harris 的制作中，爱意化作邀请：希望对方终于看见自己的价值。')
+      song('Let Me Love You (Until You Learn to Love Yourself)', 2012, 'EDM / Pop', 'Über einem elektronischen Dance-Beat wird Zuneigung zur Einladung, den eigenen Wert anzunehmen.', 'Over an electronic dance beat, affection becomes an invitation to recognize your own worth.', '在电子舞曲节奏中，爱意化作邀请：希望对方看见自己的价值。')
     ]
   },
   {
@@ -117,7 +148,7 @@ const ARTISTS = [
       song('...Baby One More Time', 1998, 'Teen Pop', 'Max Martins Klaviermotiv und doppeldeutige Hook machten aus dem Debüt eine perfekt konstruierte Pop-Zeitenwende.', 'Max Martin’s piano motif and ambiguous hook turned a debut into a perfectly engineered pop turning point.', 'Max Martin 的钢琴动机和双关副歌，让这首出道作成为精密打造的流行转折点。'),
       song('Toxic', 2003, 'Dance-Pop', 'Bollywood-Streicher, Surf-Gitarre und ein atemloser Beat malen Begehren als glamouröses, gefährliches Gift.', 'Bollywood strings, surf guitar, and a breathless beat paint desire as glamorous, dangerous poison.', '宝莱坞弦乐、冲浪吉他与急促节拍，把欲望描绘成华丽而危险的毒药。'),
       song('Oops!... I Did It Again', 2000, 'Pop', 'Die theatralische Fortsetzung ihres Durchbruchs spielt bewusst mit Unschuld, Kontrolle und dem Bild des Popphänomens.', 'The theatrical follow-up to her breakthrough knowingly plays with innocence, control, and pop-star mythology.', '这首戏剧化的续篇有意玩弄天真、控制与流行明星神话之间的张力。'),
-      song('Gimme More', 2007, 'Electropop', '„It’s Britney, bitch“ eröffnet einen hypnotischen Clubtrack, der öffentliche Beobachtung in kühle Kontrolle umkehrt.', '“It’s Britney, bitch” opens a hypnotic club track that flips public scrutiny into cool control.', '“It’s Britney, bitch”开启催眠般的舞曲，把公众凝视反转为冷静掌控。'),
+      song('Gimme More', 2007, 'Electropop', 'Eine markante gesprochene Einleitung eröffnet einen hypnotischen Clubtrack voller kühler Kontrolle.', 'A distinctive spoken introduction opens a hypnotic club track full of cool control.', '鲜明的念白开启催眠般的舞曲，传递冷静而自信的掌控感。'),
       song('Circus', 2008, 'Electropop', 'Das Leben im Rampenlicht wird zum Zirkus: Britney steht gleichzeitig als Direktorin und Hauptattraktion im Ring.', 'Life in the spotlight becomes a circus, with Britney both ringmaster and main attraction.', '聚光灯下的生活化作马戏团，Britney 同时是驯兽师与最耀眼的主角。')
     ]
   },
@@ -139,7 +170,7 @@ const ARTISTS = [
       song('Sorry Not Sorry', 2017, 'Pop / R&B', 'Eine kompromisslose Comeback-Pose: Erfolg ist hier die Antwort auf alle, die Zweifel gesät haben.', 'An unapologetic comeback stance where success becomes the answer to everyone who planted doubt.', '一场毫不道歉的回归姿态：用成功回应所有曾经的质疑。'),
       song('Heart Attack', 2013, 'Electropop', 'Die Angst vor Verletzlichkeit wird körperlich: Große Gitarren und Synths spiegeln den Kontrollverlust beim Verlieben.', 'Fear of vulnerability becomes physical, as huge guitars and synths mirror the loss of control in falling in love.', '对脆弱的恐惧变得具象；强烈吉他与合成器映照坠入爱河时的失控。'),
       song('Cool for the Summer', 2015, 'Pop Rock', 'Ein neugieriger, bewusst offener Sommerflirt, dessen Gitarrenriff und Synth-Aufbau jede Grenze in Bewegung setzen.', 'A curious, deliberately open summer flirt whose guitar riff and synth build put every boundary in motion.', '一段好奇而开放的夏日暧昧，吉他与合成器推动边界不断移动。'),
-      song('Skyscraper', 2011, 'Pop Ballad', 'In einer einzigen, fast ungeschützten Gesangsaufnahme wird Überleben zum Bild eines Hochhauses, das nach dem Sturm steht.', 'In a nearly unguarded vocal take, survival becomes a skyscraper still standing after the storm.', '近乎毫无遮掩的一次录音，把幸存写成风暴后依旧矗立的摩天大楼。'),
+      song('Skyscraper', 2011, 'Pop Ballad', 'Eine verletzliche Stimme macht Überleben zum Bild eines Hochhauses, das nach dem Sturm steht.', 'A vulnerable vocal turns survival into the image of a skyscraper still standing after the storm.', '脆弱而有力的嗓音，把幸存写成风暴后依旧矗立的摩天大楼。'),
       song('Confident', 2015, 'Pop Rock', 'Marschierende Drums und Bläser stellen eine direkte Frage: Warum sollte Selbstvertrauen überhaupt etwas Negatives sein?', 'Marching drums and brass ask a direct question: why should confidence ever be treated as a bad thing?', '行进鼓与铜管抛出直接问题：为什么自信要被视作坏事？')
     ]
   }

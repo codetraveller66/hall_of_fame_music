@@ -1,59 +1,51 @@
 const app = document.querySelector('#app');
 const languageSelect = document.querySelector('#language');
 const soundToggle = document.querySelector('#soundToggle');
-const audio = document.querySelector('#audio');
-const audioDock = document.querySelector('#audioDock');
-const dockPlay = document.querySelector('#dockPlay');
-const dockNext = document.querySelector('#dockNext');
-const nowTitle = document.querySelector('#nowTitle');
-const nowArtist = document.querySelector('#nowArtist');
-const nowArt = document.querySelector('#nowArt');
 const toast = document.querySelector('#toast');
 const pageWipe = document.querySelector('#pageWipe');
 const wipeLabel = document.querySelector('#wipeLabel');
 
-const state = {
-  lang: localStorage.getItem('hall50-language') || 'de',
-  artwork: new Map(),
-  artistImages: new Map(),
-  previewCache: new Map(),
-  current: null,
-  globalSound: false,
-  requestToken: 0
-};
+let savedLanguage;
+try { savedLanguage = localStorage.getItem('hall50-language'); } catch { /* Storage may be blocked. */ }
+const state = { lang: HallMedia.locale(savedLanguage), artistImages: new Map(), photoCredits: new Map(), globalSound: false };
+const ambience = new HallMedia.Ambience();
+const motionPreference = matchMedia('(prefers-reduced-motion: reduce)');
+let lastArtistId;
 
 languageSelect.value = state.lang;
 
 function t(key) { return UI[state.lang][key] || UI.de[key] || key; }
 function esc(value = '') { return String(value).replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch])); }
-function keyFor(artist, song) { return `${artist.id}::${song.title}`; }
-
 function parseRoute() {
-  const bits = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
-  const artist = ARTISTS.find(a => a.id === bits[0]);
-  const songIndex = artist && bits[1] === 'song' ? Number(bits[2]) : null;
-  return { artist, songIndex: Number.isInteger(songIndex) && songIndex >= 0 && songIndex < 5 ? songIndex : null };
+  return HallMedia.route(location.hash, ARTISTS);
 }
 
 function updateStaticText() {
   document.documentElement.lang = state.lang === 'zh' ? 'zh-CN' : state.lang;
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
   soundToggle.querySelector('[data-i18n]').textContent = state.globalSound ? t('soundOn') : t('soundOff');
+  soundToggle.title = t('ambienceHint');
+  soundToggle.setAttribute('aria-label', `${state.globalSound ? t('soundOn') : t('soundOff')}. ${t('ambienceHint')}`);
+  languageSelect.setAttribute('aria-label', t('language'));
 }
 
 function render() {
   updateStaticText();
   const route = parseRoute();
+  const artistChanged = lastArtistId !== route.artist?.id;
+  lastArtistId = route.artist?.id;
   if (!route.artist) renderHome();
   else renderArtist(route.artist, route.songIndex);
   app.classList.remove('scene-ready');
   requestAnimationFrame(() => requestAnimationFrame(() => app.classList.add('scene-ready')));
   requestAnimationFrame(() => app.focus({ preventScroll: true }));
+  if (artistChanged) window.scrollTo({ top: 0, behavior: 'instant' });
+  renderCredits();
 }
 
 function navigateTo(hash, label = 'HALL//50') {
   if (location.hash === hash || pageWipe.classList.contains('active')) return;
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { location.hash = hash; return; }
+  if (motionPreference.matches) { location.hash = hash; return; }
   wipeLabel.textContent = label;
   pageWipe.classList.remove('release');
   pageWipe.classList.add('active');
@@ -100,7 +92,7 @@ function renderHome() {
 function artistCard(artist, i) {
   const cached = state.artistImages.get(artist.id);
   return `<button class="artist-card" data-artist="${artist.id}" style="--accent:${artist.accent}" aria-label="${t('enter')}: ${artist.name}">
-    <img id="portrait-${artist.id}" src="${cached || fallbackArt(artist)}" alt="${esc(artist.name)}" loading="lazy">
+    <img id="portrait-${artist.id}" src="${cached || fallbackArt(artist)}" alt="${esc(artist.name)}" loading="lazy" referrerpolicy="no-referrer">
     <span class="artist-index">${String(i + 1).padStart(2,'0')}</span>
     <span class="artist-card-copy"><small>${artist.genre}</small><h3>${esc(artist.name)}</h3><span>${artist.years}</span></span>
   </button>`;
@@ -112,7 +104,7 @@ function renderArtist(artist, songIndex) {
   const portrait = state.artistImages.get(artist.id) || fallbackArt(artist);
   app.innerHTML = `
     <section class="artist-mast">
-      <img id="mast-${artist.id}" src="${portrait}" alt="${esc(artist.name)}">
+      <img id="mast-${artist.id}" src="${portrait}" alt="${esc(artist.name)}" referrerpolicy="no-referrer">
       <button class="back-button" id="backHome"><span>←</span> ${t('back')}</button>
       <div class="mast-copy">
         <p class="dossier-label">${t('dossier')} · ${String(ARTISTS.indexOf(artist)+1).padStart(2,'0')}</p>
@@ -139,13 +131,12 @@ function renderArtist(artist, songIndex) {
   mast.addEventListener('pointermove', parallaxPanel);
   mast.addEventListener('pointerleave', resetPanel);
   loadArtistImage(artist);
-  artist.songs.forEach((song, i) => loadSongMedia(artist, song, i));
-  if (songIndex !== null) bindPreview(artist, songIndex);
+  if (songIndex !== null && matchMedia('(max-width: 760px)').matches) requestAnimationFrame(() => document.querySelector('#storyPanel')?.scrollIntoView({ block: 'start', behavior: motionPreference.matches ? 'instant' : 'smooth' }));
 }
 
 function trackRow(artist, song, i, active) {
-  const art = state.artwork.get(keyFor(artist,song)) || fallbackArt(artist);
-  return `<button class="track-row ${active === i ? 'active' : ''}" data-song="${i}" aria-label="${esc(song.title)}">
+  const art = trackPoster(artist, song, i);
+  return `<button class="track-row ${active === i ? 'active' : ''}" data-song="${i}" aria-pressed="${active === i}" aria-label="${esc(song.title)}">
     <span class="track-no">${String(i+1).padStart(2,'0')}</span><img class="track-thumb" id="art-${artist.id}-${i}" src="${art}" alt="" loading="lazy">
     <span class="track-info"><strong>${esc(song.title)}</strong><small>${song.year} · ${song.style}</small></span><span class="track-arrow">›</span>
   </button>`;
@@ -153,8 +144,7 @@ function trackRow(artist, song, i, active) {
 
 function storyMarkup(artist, i) {
   const song = artist.songs[i];
-  const media = state.previewCache.get(keyFor(artist,song));
-  const art = state.artwork.get(keyFor(artist,song)) || fallbackArt(artist);
+  const art = trackPoster(artist, song, i);
   return `<div class="story-graphics" aria-hidden="true">
       <div class="story-sunburst"></div>
       <div class="vinyl-disc"></div>
@@ -166,66 +156,42 @@ function storyMarkup(artist, i) {
       <h2>${esc(song.title)}</h2>
       <div class="story-tags"><span>${song.year}</span><span>${song.style}</span></div>
       <p class="story-text">${song.story[state.lang]}</p>
-      <button class="preview-btn" id="previewButton" type="button" ${media === null ? 'disabled' : ''}><span class="play-triangle"></span><span>${media === null ? t('unavailable') : t('preview')}</span></button>
-      <small class="credits">${t('source')}</small>
+      <a class="preview-btn" href="${esc(HallMedia.musicLink(artist, song))}" target="_blank" rel="noopener noreferrer"><span class="play-triangle"></span><span>${t('preview')}</span></a>
+      <small class="credits">${t('source')}<br>${t('editorial')}</small>
     </article>`;
-}
-
-function bindPreview(artist, i) {
-  const button = document.querySelector('#previewButton');
-  if (!button) return;
-  button.addEventListener('click', async () => {
-    const song = artist.songs[i];
-    if (state.current?.artist === artist && state.current?.song === song && !audio.paused) { audio.pause(); updateAudioUI(); return; }
-    button.disabled = true;
-    button.querySelector('span:last-child').textContent = t('searching');
-    const media = await getSongMedia(artist, song);
-    if (!media?.previewUrl) {
-      button.querySelector('span:last-child').textContent = t('unavailable');
-      showToast(t('audioError'));
-      return;
-    }
-    button.disabled = false;
-    playMedia(artist, song, media);
-  });
 }
 
 async function loadArtistImage(artist) {
   if (state.artistImages.has(artist.id)) return;
-  try {
-    const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=pageimages&pithumbsize=1400&titles=${encodeURIComponent(artist.wiki)}`;
-    const response = await fetch(url);
-    const data = await response.json();
-    const page = Object.values(data.query.pages)[0];
-    if (!page.thumbnail?.source) return;
-    state.artistImages.set(artist.id, page.thumbnail.source);
-    document.querySelector(`#portrait-${artist.id}`)?.setAttribute('src', page.thumbnail.source);
-    document.querySelector(`#mast-${artist.id}`)?.setAttribute('src', page.thumbnail.source);
-  } catch (_) { /* local fallback remains */ }
+  const photo = await HallMedia.artistPhoto(artist.wiki);
+  if (!photo) return;
+  state.photoCredits.set(artist.id, { ...photo, name: artist.name });
+  renderCredits(); // Attribution is present before any photo is displayed.
+  state.artistImages.set(artist.id, photo.image);
+  for (const prefix of ['portrait', 'mast']) document.querySelector(`#${prefix}-${artist.id}`)?.setAttribute('src', photo.image);
 }
 
-async function loadSongMedia(artist, song, i) {
-  const media = await getSongMedia(artist, song);
-  if (!media?.artworkUrl100) return;
-  const art = media.artworkUrl100.replace('100x100bb', '1200x1200bb');
-  state.artwork.set(keyFor(artist,song), art);
-  document.querySelector(`#art-${artist.id}-${i}`)?.setAttribute('src', art);
-  const route = parseRoute();
-  if (route.artist === artist && route.songIndex === i) document.querySelector('#storyArt')?.setAttribute('src', art);
+function renderCredits() {
+  const list = document.querySelector('#photoCreditList');
+  list.replaceChildren();
+  for (const credit of state.photoCredits.values()) {
+    const item = document.createElement('li');
+    item.append(document.createTextNode(`${credit.name} — ${credit.author}${credit.attribution ? ' · ' + credit.attribution : ''} · `));
+    for (const [label, href] of [['Wikimedia Commons', credit.source], [credit.license, credit.licenseUrl]]) {
+      const link = document.createElement('a'); link.textContent = label; link.href = href;
+      link.target = '_blank'; link.rel = 'noopener noreferrer'; item.append(link, document.createTextNode(' · '));
+    }
+    list.append(item);
+  }
+  document.querySelector('#photoCredits').hidden = state.photoCredits.size === 0;
 }
 
-async function getSongMedia(artist, song) {
-  const key = keyFor(artist,song);
-  if (state.previewCache.has(key)) return state.previewCache.get(key);
-  try {
-    const term = encodeURIComponent(`${artist.name} ${song.title}`);
-    const response = await fetch(`https://itunes.apple.com/search?term=${term}&entity=song&limit=8`);
-    const data = await response.json();
-    const normalized = value => value.toLowerCase().replace(/[^a-z0-9]/g,'');
-    const match = data.results.find(r => normalized(r.artistName).includes(normalized(artist.name).slice(0,8)) && normalized(r.trackName).includes(normalized(song.title).slice(0,8))) || data.results[0] || null;
-    state.previewCache.set(key, match);
-    return match;
-  } catch (_) { state.previewCache.set(key, null); return null; }
+function trackPoster(artist, song, i) {
+  const words = song.title.split(' '), lines = []; let line = '';
+  for (const word of words) { if ((line + word).length > 17 && line) { lines.push(line.trim()); line = ''; } line += word + ' '; }
+  if (line) lines.push(line.trim());
+  const text = lines.map((value, j) => `<tspan x="54" y="${300 + j * 63}">${esc(value)}</tspan>`).join('');
+  return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800"><rect width="800" height="800" fill="#111"/><path d="M0 0H800V180L0 450Z" fill="${artist.accent}"/><path d="M0 610L800 380V800H0Z" fill="#f4f0e6"/><circle cx="650" cy="110" r="175" fill="none" stroke="#111" stroke-width="35"/><text x="48" y="100" font-family="Arial,sans-serif" font-weight="900" font-size="52" fill="#111">HALL//50 · ${String(i+1).padStart(2,'0')}</text><text font-family="Arial,sans-serif" font-weight="900" font-size="55" fill="white">${text}</text><text x="50" y="700" font-family="Arial,sans-serif" font-weight="900" font-size="30" fill="#111">${esc(artist.name)}</text><text x="50" y="753" font-family="Arial,sans-serif" font-size="23" fill="#333">${song.year} / ${esc(song.style)}</text></svg>`)}`;
 }
 
 function fallbackArt(artist) {
@@ -234,49 +200,14 @@ function fallbackArt(artist) {
 }
 
 async function toggleGlobalSound() {
-  state.globalSound = !state.globalSound;
-  soundToggle.setAttribute('aria-pressed', String(state.globalSound));
-  updateStaticText();
-  if (!state.globalSound) { audio.pause(); updateAudioUI(); return; }
-  if (state.current?.media?.previewUrl) { audio.play().catch(() => {}); updateAudioUI(); return; }
-  await playNextAvailable();
-}
-
-async function playNextAvailable() {
-  const flat = ARTISTS.flatMap(artist => artist.songs.map(song => ({artist,song})));
-  let start = state.current ? flat.findIndex(x => x.artist === state.current.artist && x.song === state.current.song) + 1 : Math.floor(Math.random()*flat.length);
-  for (let n=0; n<flat.length; n++) {
-    const pick = flat[(start+n)%flat.length];
-    const media = await getSongMedia(pick.artist,pick.song);
-    if (media?.previewUrl) { playMedia(pick.artist,pick.song,media); return; }
-  }
-  state.globalSound = false; soundToggle.setAttribute('aria-pressed','false'); updateStaticText(); showToast(t('audioError'));
-}
-
-function playMedia(artist, song, media) {
-  state.current = { artist, song, media };
-  state.globalSound = true;
-  audio.src = media.previewUrl;
-  audio.play().catch(() => showToast(t('audioError')));
-  audioDock.hidden = false;
-  nowTitle.textContent = song.title;
-  nowArtist.textContent = artist.name;
-  nowArt.style.backgroundImage = `url('${(media.artworkUrl100 || '').replace('100x100bb','300x300bb')}')`;
-  soundToggle.setAttribute('aria-pressed','true');
-  updateStaticText(); updateAudioUI();
-}
-
-function updateAudioUI() {
-  const paused = audio.paused;
-  audioDock.classList.toggle('paused', paused);
-  dockPlay.textContent = paused ? '▶' : 'Ⅱ';
-  dockPlay.setAttribute('aria-label', paused ? t('preview') : t('pause'));
-  const route = parseRoute();
-  const button = document.querySelector('#previewButton');
-  if (button && state.current?.artist === route.artist && state.current?.song === route.artist?.songs[route.songIndex]) {
-    button.querySelector('span:last-child').textContent = paused ? t('preview') : t('pause');
-  }
-  document.querySelector('#storyPanel')?.classList.toggle('is-playing', !paused && state.current?.artist === route.artist && state.current?.song === route.artist?.songs[route.songIndex]);
+  if (soundToggle.disabled) return;
+  soundToggle.disabled = true;
+  try {
+    if (state.globalSound) await ambience.stop(); else await ambience.start();
+    state.globalSound = ambience.active;
+    if (state.globalSound) showToast(t('ambienceHint'));
+  } catch { state.globalSound = false; await ambience.stop().catch(() => {}); showToast(t('audioError')); }
+  finally { soundToggle.disabled = false; soundToggle.setAttribute('aria-pressed', String(state.globalSound)); updateStaticText(); }
 }
 
 function showToast(message) {
@@ -285,6 +216,7 @@ function showToast(message) {
 }
 
 function tiltCard(event) {
+  if (motionPreference.matches || event.pointerType === 'touch') return;
   const rect = event.currentTarget.getBoundingClientRect();
   const x = (event.clientX - rect.left) / rect.width - .5;
   const y = (event.clientY - rect.top) / rect.height - .5;
@@ -295,6 +227,7 @@ function tiltCard(event) {
 }
 function resetCard(event) { event.currentTarget.style.removeProperty('--rx'); event.currentTarget.style.removeProperty('--ry'); }
 function parallaxPanel(event) {
+  if (motionPreference.matches || event.pointerType === 'touch') return;
   const rect = event.currentTarget.getBoundingClientRect();
   event.currentTarget.style.setProperty('--shift-x', `${((event.clientX-rect.left)/rect.width-.5)*18}px`);
   event.currentTarget.style.setProperty('--shift-y', `${((event.clientY-rect.top)/rect.height-.5)*10}px`);
@@ -302,6 +235,7 @@ function parallaxPanel(event) {
 function resetPanel(event) { event.currentTarget.style.setProperty('--shift-x','0px'); event.currentTarget.style.setProperty('--shift-y','0px'); }
 
 document.addEventListener('pointerdown', event => {
+  if (motionPreference.matches) return;
   if (!event.target.closest('button,a,select')) return;
   const burst = document.createElement('span');
   burst.className = 'click-burst';
@@ -310,11 +244,21 @@ document.addEventListener('pointerdown', event => {
   burst.addEventListener('animationend', () => burst.remove());
 });
 
-languageSelect.addEventListener('change', () => { state.lang = languageSelect.value; localStorage.setItem('hall50-language',state.lang); render(); });
+languageSelect.addEventListener('change', () => {
+  state.lang = HallMedia.locale(languageSelect.value);
+  try { localStorage.setItem('hall50-language', state.lang); } catch { /* Session-only preference. */ }
+  render();
+});
 soundToggle.addEventListener('click', toggleGlobalSound);
-dockPlay.addEventListener('click', () => { if (!audio.src) return playNextAvailable(); audio.paused ? audio.play() : audio.pause(); });
-dockNext.addEventListener('click', playNextAvailable);
-audio.addEventListener('play', updateAudioUI); audio.addEventListener('pause', updateAudioUI); audio.addEventListener('ended', () => state.globalSound ? playNextAvailable() : updateAudioUI());
+document.addEventListener('visibilitychange', async () => {
+  if (document.hidden) { await ambience.stop().catch(() => {}); state.globalSound = false; soundToggle.setAttribute('aria-pressed', 'false'); updateStaticText(); }
+});
+document.querySelector('.brand').addEventListener('click', event => { event.preventDefault(); navigateTo('#/'); });
+app.addEventListener('error', event => {
+  if (event.target.tagName !== 'IMG' || event.target.src.startsWith('data:')) return;
+  const artist = ARTISTS.find(item => event.target.id.endsWith(item.id));
+  if (artist) { state.artistImages.delete(artist.id); event.target.src = fallbackArt(artist); }
+}, true);
 window.addEventListener('hashchange', render);
 window.addEventListener('keydown', event => { if (event.key === 'Escape' && parseRoute().artist) { const route = parseRoute(); navigateTo(route.songIndex !== null ? `#/${route.artist.id}` : '#/', t('back')); } });
 

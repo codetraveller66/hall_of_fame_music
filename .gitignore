@@ -1,0 +1,12 @@
+.private-backup/
+.site-stage/
+.sites-runtime/
+.sites-checkout*/
+node_modules/
+.env
+.env.*
+!.env.example
+*.log
+*.tar.gz
+*.bundle
+test-results/

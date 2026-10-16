@@ -262,7 +262,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid
 .artist-card { --rx:0deg; --ry:0deg; --base-y:0px; transform-style:preserve-3d; will-change:transform; }
 .artist-card:nth-child(even) { --base-y:24px; transform:translateY(var(--base-y)) perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)); }
 .artist-card:nth-child(odd) { transform:translateY(var(--base-y)) perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)); }
-.scene-ready .artist-card { animation: dossierDrop .58s calc(var(--i) * 55ms) cubic-bezier(.15,.85,.18,1.15) both; }
+.scene-ready .artist-card { animation: dossierDrop .58s calc(var(--i) * 55ms) cubic-bezier(.15,.85,.18,1.15) backwards; }
 .artist-card:nth-child(even):hover { transform:translateY(calc(var(--base-y) - 10px)) perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) rotate(-1deg); }
 .artist-card:nth-child(odd):hover { transform:translateY(-10px) perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) rotate(1deg); }
 .artist-card img { transform-origin:var(--px,50%) var(--py,50%); }
@@ -284,7 +284,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid
 @keyframes nameImpact { from{opacity:0;transform:translateX(-90px) skewX(-18deg) scaleX(1.25);filter:blur(5px)} 65%{transform:translateX(12px) skewX(4deg)} to{opacity:1;transform:none;filter:none} }
 @keyframes arrowJab { to{transform:translateX(-5px)} }
 
-.scene-ready .track-row { animation:trackSnap .42s calc(.16s + var(--i) * 70ms) cubic-bezier(.15,.85,.2,1.15) both; }
+.scene-ready .track-row { animation:trackSnap .42s calc(.16s + var(--i) * 70ms) cubic-bezier(.15,.85,.2,1.15) backwards; }
 .track-row { position:relative;overflow:hidden; }
 .track-row::after { content:'';position:absolute;inset:0 auto 0 0;width:0;background:var(--accent);opacity:.18;transform:skewX(-18deg);transition:width .22s; }
 .track-row:hover::after,.track-row.active::after { width:104%; }
@@ -344,3 +344,22 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid
   @keyframes vinylPlay { from{transform:rotate(0)} to{transform:rotate(360deg)} }
 }
 @media (prefers-reduced-motion: reduce) { .page-wipe{display:none!important}.story-sunburst,.vinyl-disc{animation:none!important}.artist-mast>img{transform:none!important} }
+
+/* Public portfolio edition: legible attribution and bounded portrait framing. */
+[hidden] { display:none!important; }
+.site-footer { padding:28px clamp(22px,5vw,78px) 45px;background:#080808;border-top:1px solid #333;font-size:13px;line-height:1.65;color:#bcb8b0; }
+.site-footer nav { display:flex;flex-wrap:wrap;gap:20px; }
+.site-footer a { color:var(--paper);text-underline-offset:4px; }
+.site-footer a:hover { color:var(--yellow); }
+.site-footer details { margin-top:20px;max-width:1100px; }
+.site-footer summary { cursor:pointer;color:var(--paper); }
+.site-footer li { margin:10px 0;overflow-wrap:anywhere; }
+.site-footer ul { padding-left:22px; }
+.preview-btn { text-decoration:none;font-size:12px;line-height:1.4;max-width:100%;padding-top:12px;padding-bottom:12px; }
+.credits { font-size:12px;line-height:1.6;color:#b8b4ad; }
+.story-panel { scroll-margin-top:var(--top); }
+.artist-mast { background:#111 url('assets/hall-texture.png') center/cover; }
+.artist-mast > img { inset:0 0 0 auto;width:48%;height:100%;object-fit:contain;object-position:center;transform:translate(var(--shift-x),var(--shift-y)); }
+.page-wipe strong { white-space:normal;overflow-wrap:anywhere; }
+.toast { max-width:min(580px,90vw);line-height:1.5; }
+@media (max-width:760px) { .artist-mast > img { width:65%;opacity:.7; }.site-footer{padding-bottom:32px}.story-content{overflow-wrap:anywhere} }
